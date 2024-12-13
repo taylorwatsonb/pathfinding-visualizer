@@ -1,9 +1,10 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from collections import deque
 import os
 import logging
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -167,7 +168,12 @@ def astar(grid, start, end):
     return [], visited  # No path found
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
+
+# Configure static files for production
+app.static_folder = 'static'
+app.static_url_path = '/static'
 
 class Node:
     def __init__(self, x, y, is_wall=False):
