@@ -34,6 +34,20 @@ class PathfindingVisualizer {
         document.getElementById('clearPathButton').addEventListener('click', () => {
             this.grid.clearPath();
         });
+
+        document.getElementById('generateMazeButton').addEventListener('click', async () => {
+            if (!this.isRunning) {
+                this.isRunning = true;
+                document.getElementById('startButton').disabled = true;
+                document.getElementById('generateMazeButton').disabled = true;
+                
+                await this.grid.generateMaze();
+                
+                this.isRunning = false;
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('generateMazeButton').disabled = false;
+            }
+        });
     }
 
     async runAlgorithm() {

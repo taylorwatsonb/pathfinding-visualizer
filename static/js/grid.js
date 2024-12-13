@@ -117,6 +117,67 @@ class Grid {
         this.draw();
     }
 
+    async generateMaze() {
+        // Reset the grid before generating maze
+        this.reset();
+        
+        // Initialize all cells as walls
+        this.nodes.forEach(node => {
+            node.isWall = true;
+        });
+        
+        const stack = [];
+        const startX = 1;
+        const startY = 1;
+        
+        // Get the initial cell and mark it as passage
+        const startCell = this.getNode(startX, startY);
+        startCell.isWall = false;
+        stack.push(startCell);
+        
+        while (stack.length > 0) {
+            const current = stack[stack.length - 1];
+            const unvisitedNeighbors = this.getMazeNeighbors(current).filter(n => this.isCellUnvisited(n));
+            
+            if (unvisitedNeighbors.length === 0) {
+                stack.pop();
+            } else {
+                const next = unvisitedNeighbors[Math.floor(Math.random() * unvisitedNeighbors.length)];
+                const wall = this.getNode(
+                    current.x + Math.floor((next.x - current.x) / 2),
+                    current.y + Math.floor((next.y - current.y) / 2)
+                );
+                
+                next.isWall = false;
+                wall.isWall = false;
+                stack.push(next);
+            }
+            
+            this.draw();
+            await new Promise(resolve => setTimeout(resolve, 20));
+        }
+    }
+    
+    getMazeNeighbors(node) {
+        const neighbors = [];
+        const directions = [[0, 2], [2, 0], [0, -2], [-2, 0]];
+        
+        for (const [dx, dy] of directions) {
+            const newX = node.x + dx;
+            const newY = node.y + dy;
+            
+            if (newX >= 0 && newX < this.cols && newY >= 0 && newY < this.rows) {
+                const neighbor = this.getNode(newX, newY);
+                neighbors.push(neighbor);
+            }
+        }
+        
+        return neighbors;
+    }
+    
+    isCellUnvisited(node) {
+        return node.isWall;
+
     clearPath() {
         this.nodes.forEach(node => {
             if (node.state !== 'start' && node.state !== 'end') {
