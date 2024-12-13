@@ -7,13 +7,38 @@ import logging
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 logger = logging.getLogger(__name__)
+
+# Initialize Flask app
+app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or "a secret key"
+
+# Configure static files for production
+app.static_folder = 'static'
+app.static_url_path = '/static'
 
 class Base(DeclarativeBase):
     pass
 
 db = SQLAlchemy(model_class=Base)
+
+# Error handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    logger.error(f'Page not found: {request.url}')
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f'Server Error: {error}')
+    db.session.rollback()
+    return render_template('500.html'), 500
 
 def heuristic(node, goal):
     return abs(node.x - goal.x) + abs(node.y - goal.y)
@@ -209,9 +234,21 @@ if os.environ.get("DATABASE_URL"):
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_timeout": 30,
     }
-    db.init_app(app)
-    logger.info("Database initialized successfully")
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    try:
+        db.init_app(app)
+        with app.app_context():
+            db.engine.connect()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}")
+        if not app.debug:
+            # In production, continue without database rather than crash
+            logger.warning("Continuing without database support")
 
 @app.route('/')
 def index():
