@@ -177,6 +177,7 @@ class Grid {
     
     isCellUnvisited(node) {
         return node.isWall;
+    }
 
     clearPath() {
         this.nodes.forEach(node => {

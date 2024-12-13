@@ -60,23 +60,6 @@ class PathfindingVisualizer {
         document.getElementById('speedRange').addEventListener('input', (e) => {
             this.speed = 100 - e.target.value;
         });
-        
-    updateAlgorithmInfo() {
-        const info = this.algorithmInfo[this.algorithm];
-        document.getElementById('algorithmTitle').textContent = info.title;
-        document.getElementById('algorithmDescription').textContent = info.description;
-        document.getElementById('algorithmSteps').classList.add('d-none');
-    }
-
-    updateStepInfo(nodeState) {
-        const stepsDiv = document.getElementById('algorithmSteps');
-        const info = this.algorithmInfo[this.algorithm];
-        
-        if (info.steps[nodeState]) {
-            stepsDiv.textContent = info.steps[nodeState];
-            stepsDiv.classList.remove('d-none');
-        }
-    }
 
         document.getElementById('startButton').addEventListener('click', () => {
             if (!this.isRunning) {
@@ -105,6 +88,23 @@ class PathfindingVisualizer {
                 document.getElementById('generateMazeButton').disabled = false;
             }
         });
+    }
+
+    updateAlgorithmInfo() {
+        const info = this.algorithmInfo[this.algorithm];
+        document.getElementById('algorithmTitle').textContent = info.title;
+        document.getElementById('algorithmDescription').textContent = info.description;
+        document.getElementById('algorithmSteps').classList.add('d-none');
+    }
+
+    updateStepInfo(nodeState) {
+        const stepsDiv = document.getElementById('algorithmSteps');
+        const info = this.algorithmInfo[this.algorithm];
+        
+        if (info.steps[nodeState]) {
+            stepsDiv.textContent = info.steps[nodeState];
+            stepsDiv.classList.remove('d-none');
+        }
     }
 
     async runAlgorithm() {
