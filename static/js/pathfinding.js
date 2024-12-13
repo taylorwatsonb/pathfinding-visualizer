@@ -50,15 +50,46 @@ class PathfindingVisualizer {
             return;
         }
 
-        let path;
-        if (this.algorithm === 'astar') {
-            path = await astar(this.grid, start, end, this.speed);
-        } else {
-            path = await dijkstra(this.grid, start, end, this.speed);
-        }
+        const gridData = this.grid.nodes.map(row => row.map(node => node.isWall));
+        
+        try {
+            const response = await fetch('/api/pathfind', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    start: { x: start.x, y: start.y },
+                    end: { x: end.x, y: end.y },
+                    algorithm: this.algorithm,
+                    grid: gridData
+                })
+            });
 
-        if (path) {
-            await this.grid.visualizePath(path, this.speed);
+            const data = await response.json();
+            
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            // Visualize visited nodes
+            for (const node of data.visited) {
+                const gridNode = this.grid.getNode(node.x, node.y);
+                if (gridNode !== start && gridNode !== end) {
+                    gridNode.state = 'visited';
+                    this.grid.draw();
+                    await sleep(this.speed);
+                }
+            }
+
+            // Visualize final path
+            if (data.path) {
+                await this.grid.visualizePath(data.path.map(pos => this.grid.getNode(pos.x, pos.y)), this.speed);
+            }
+        } catch (error) {
+            console.error('Error during pathfinding:', error);
+            alert('An error occurred during pathfinding');
         }
 
         this.isRunning = false;
