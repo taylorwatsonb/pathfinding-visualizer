@@ -39,3 +39,19 @@ canvas {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 5px;
 }
+
+.algorithm-info {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.algorithm-info .card {
+    background-color: rgba(33, 37, 41, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#algorithmSteps {
+    margin-top: 1rem;
+    background-color: rgba(13, 202, 240, 0.1);
+    border-color: rgba(13, 202, 240, 0.2);
+}
