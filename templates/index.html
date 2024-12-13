@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinding Visualizer</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Pathfinding Visualizer</h1>
+        
+        <div class="controls">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <select id="algorithmSelect" class="form-select">
+                        <option value="astar">A* Algorithm</option>
+                        <option value="dijkstra">Dijkstra's Algorithm</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                        <label for="speedRange" class="form-label me-2">Speed:</label>
+                        <input type="range" class="form-range" id="speedRange" min="1" max="100" value="50">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="btn-group w-100">
+                        <button id="startButton" class="btn btn-success">Start</button>
+                        <button id="clearPathButton" class="btn btn-warning">Clear Path</button>
+                        <button id="resetButton" class="btn btn-danger">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions alert alert-info">
+            <h5>Instructions:</h5>
+            <ul>
+                <li>Shift + Click: Set start point</li>
+                <li>Ctrl + Click: Set end point</li>
+                <li>Click and drag: Draw walls</li>
+            </ul>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2ecc71;"></div>
+                <span>Start</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e74c3c;"></div>
+                <span>End</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #666;"></div>
+                <span>Wall</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #264653;"></div>
+                <span>Visited</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #2a9d8f;"></div>
+                <span>Exploring</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #e9c46a;"></div>
+                <span>Path</span>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="pathGrid"></canvas>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/grid.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/algorithms.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/pathfinding.js') }}"></script>
+</body>
+</html>
