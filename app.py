@@ -3,6 +3,7 @@ import logging
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
+from collections import deque
 
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
@@ -14,6 +15,66 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 def heuristic(node, goal):
     return abs(node.x - goal.x) + abs(node.y - goal.y)
+
+def bfs(grid, start, end):
+    start_node = grid.nodes[start['y']][start['x']]
+    end_node = grid.nodes[end['y']][end['x']]
+    
+    queue = deque([start_node])
+    visited = set([start_node])
+    came_from = {}
+    visit_order = []
+    
+    while queue:
+        current = queue.popleft()
+        visit_order.append({'x': current.x, 'y': current.y})
+        
+        if current.x == end_node.x and current.y == end_node.y:
+            path = []
+            while current in came_from:
+                path.append({'x': current.x, 'y': current.y})
+                current = came_from[current]
+            path.append({'x': start_node.x, 'y': start_node.y})
+            return path[::-1], visit_order
+        
+        for neighbor in grid.get_neighbors(current):
+            if neighbor not in visited:
+                queue.append(neighbor)
+                visited.add(neighbor)
+                came_from[neighbor] = current
+    
+    return [], visit_order
+
+def dfs(grid, start, end):
+    start_node = grid.nodes[start['y']][start['x']]
+    end_node = grid.nodes[end['y']][end['x']]
+    
+    stack = [start_node]
+    visited = set()
+    came_from = {}
+    visit_order = []
+    
+    while stack:
+        current = stack.pop()
+        
+        if current not in visited:
+            visited.add(current)
+            visit_order.append({'x': current.x, 'y': current.y})
+            
+            if current.x == end_node.x and current.y == end_node.y:
+                path = []
+                while current in came_from:
+                    path.append({'x': current.x, 'y': current.y})
+                    current = came_from[current]
+                path.append({'x': start_node.x, 'y': start_node.y})
+                return path[::-1], visit_order
+            
+            for neighbor in reversed(list(grid.get_neighbors(current))):
+                if neighbor not in visited:
+                    stack.append(neighbor)
+                    came_from[neighbor] = current
+    
+    return [], visit_order
 
 def astar(grid, start, end):
     start_node = grid.nodes[start['y']][start['x']]
@@ -113,7 +174,21 @@ def pathfind():
         return jsonify({'error': 'Missing required data'}), 400
     
     grid = Grid(grid_data)
-    path, visited = astar(grid, start, end)
+    
+    if algorithm == 'bfs':
+        path, visited = bfs(grid, start, end)
+    elif algorithm == 'dfs':
+        path, visited = dfs(grid, start, end)
+    else:
+        algorithms = {
+        'astar': astar,
+        'dijkstra': dijkstra,
+        'bfs': bfs,
+        'dfs': dfs
+    }
+    
+    algorithm_func = algorithms.get(algorithm, astar)
+    path, visited = algorithm_func(grid, start, end)
     
     return jsonify({
         'path': path,

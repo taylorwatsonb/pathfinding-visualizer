@@ -116,6 +116,67 @@ function reconstructPath(cameFrom, current) {
     return path;
 }
 
+async function bfs(grid, start, end, speed) {
+    const queue = [start];
+    const visited = new Set();
+    const cameFrom = new Map();
+    
+    while (queue.length > 0) {
+        const current = queue.shift();
+        
+        if (current === end) {
+            return reconstructPath(cameFrom, current);
+        }
+        
+        visited.add(current);
+        grid.setNodeState(current, 'visited');
+        await sleep(speed);
+        
+        const neighbors = grid.getNeighbors(current);
+        for (const neighbor of neighbors) {
+            if (!visited.has(neighbor) && !neighbor.isWall) {
+                queue.push(neighbor);
+                visited.add(neighbor);
+                cameFrom.set(neighbor, current);
+                grid.setNodeState(neighbor, 'exploring');
+            }
+        }
+    }
+    
+    return null;
+}
+
+async function dfs(grid, start, end, speed) {
+    const stack = [start];
+    const visited = new Set();
+    const cameFrom = new Map();
+    
+    while (stack.length > 0) {
+        const current = stack.pop();
+        
+        if (current === end) {
+            return reconstructPath(cameFrom, current);
+        }
+        
+        if (!visited.has(current)) {
+            visited.add(current);
+            grid.setNodeState(current, 'visited');
+            await sleep(speed);
+            
+            const neighbors = grid.getNeighbors(current);
+            for (const neighbor of neighbors.reverse()) {
+                if (!visited.has(neighbor) && !neighbor.isWall) {
+                    stack.push(neighbor);
+                    cameFrom.set(neighbor, current);
+                    grid.setNodeState(neighbor, 'exploring');
+                }
+            }
+        }
+    }
+    
+    return null;
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
