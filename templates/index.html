@@ -91,16 +91,8 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/algorithms.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/grid.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/pathfinding.js') }}"></script>
-    <script>
-        // Ensure scripts are loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof Grid === 'undefined') {
-                console.error('Grid class not loaded');
-            }
-        });
-    </script>
+    <script defer src="{{ url_for('static', filename='js/grid.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/algorithms.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/pathfinding.js') }}"></script>
 </body>
 </html>
