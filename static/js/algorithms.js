@@ -45,42 +45,64 @@ async function astar(grid, start, end, speed) {
     return null;
 }
 
-async function dijkstra(grid, start, end, speed) {
-    const distances = new Map();
-    const previous = new Map();
-    const unvisited = new Set();
+async function taylor(grid, start, end, speed) {
+    const openSet = [start];
+    const closedSet = new Set();
+    const cameFrom = new Map();
     
-    grid.nodes.forEach(node => {
-        distances.set(node, Infinity);
-        unvisited.add(node);
-    });
-    distances.set(start, 0);
+    const gScore = new Map();
+    const tScore = new Map(); // Taylor score
     
-    while (unvisited.size > 0) {
-        const current = getMinDistance(unvisited, distances);
+    gScore.set(start, 0);
+    tScore.set(start, taylorHeuristic(start, end));
+    
+    while (openSet.length > 0) {
+        const current = getLowestTScore(openSet, tScore);
         
         if (current === end) {
-            return reconstructPath(previous, current);
+            return reconstructPath(cameFrom, current);
         }
         
-        unvisited.delete(current);
+        openSet.splice(openSet.indexOf(current), 1);
+        closedSet.add(current);
+        
         grid.setNodeState(current, 'visited');
         await sleep(speed);
         
         const neighbors = grid.getNeighbors(current);
         for (const neighbor of neighbors) {
-            if (!unvisited.has(neighbor) || neighbor.isWall) continue;
+            if (closedSet.has(neighbor) || neighbor.isWall) continue;
             
-            const alt = distances.get(current) + 1;
-            if (alt < distances.get(neighbor)) {
-                distances.set(neighbor, alt);
-                previous.set(neighbor, current);
-                grid.setNodeState(neighbor, 'exploring');
+            const tentativeGScore = gScore.get(current) + 1;
+            
+            if (!openSet.includes(neighbor)) {
+                openSet.push(neighbor);
+            } else if (tentativeGScore >= gScore.get(neighbor)) {
+                continue;
             }
+            
+            cameFrom.set(neighbor, current);
+            gScore.set(neighbor, tentativeGScore);
+            tScore.set(neighbor, gScore.get(neighbor) + taylorHeuristic(neighbor, end));
+            
+            grid.setNodeState(neighbor, 'exploring');
         }
     }
     
     return null;
+}
+
+function taylorHeuristic(node1, node2) {
+    // Taylor's series-inspired heuristic that considers both Manhattan distance and diagonal movement
+    const dx = Math.abs(node1.x - node2.x);
+    const dy = Math.abs(node1.y - node2.y);
+    return Math.sqrt(dx * dx + dy * dy) + (dx + dy) / 2;
+}
+
+function getLowestTScore(nodes, tScore) {
+    return nodes.reduce((min, node) => 
+        (tScore.get(node) < tScore.get(min)) ? node : min
+    );
 }
 
 function heuristic(node1, node2) {
